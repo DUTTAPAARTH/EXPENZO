@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS for Expenzo Gen-Z theme */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-cream-500 text-dark-base;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-500;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-500 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-600;
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-dark-base font-semibold py-3 px-6 rounded-button transition-all duration-300 transform hover:scale-105 hover:shadow-glow active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-button transition-all duration-300 transform hover:scale-105 hover:shadow-teal-glow active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-dark-base font-semibold py-3 px-6 rounded-button transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-card shadow-card border border-gray-100 p-6 transition-all duration-300 hover:shadow-float hover:transform hover:-translate-y-1;
+  }
+
+  .card-dark {
+    @apply bg-dark-100 rounded-card shadow-card border border-dark-200 p-6 transition-all duration-300 hover:shadow-float hover:transform hover:-translate-y-1;
+  }
+
+  /* Input styles */
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-button focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white;
+  }
+
+  .input-field-dark {
+    @apply w-full px-4 py-3 border border-dark-300 rounded-button focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-dark-100 text-white;
+  }
+
+  /* Gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-400;
+  }
+
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-400;
+  }
+
+  .gradient-accent {
+    @apply bg-gradient-to-r from-accent-500 to-accent-400;
+  }
+
+  /* Funky animations */
+  .bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  /* Glow effects */
+  .glow-primary {
+    @apply shadow-glow;
+  }
+
+  .glow-secondary {
+    @apply shadow-teal-glow;
+  }
+}
+
+/* Custom animations */
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Emoji and fun elements */
+.emoji-bounce {
+  animation: bounce 2s infinite;
+}
+
+.money-rain::before {
+  content: "💰";
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fall 2s ease-in-out infinite;
+}
+
+@keyframes fall {
+  0% {
+    top: -20px;
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Chart container styling */
+.chart-container {
+  @apply relative w-full h-64 md:h-80 lg:h-96;
+}
+
+/* Responsive typography */
+.text-funky {
+  @apply font-heading text-2xl md:text-3xl lg:text-4xl font-bold;
+  background: linear-gradient(135deg, #ffc300, #2eccb0, #00aeef);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  @apply inline-block w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+}
+
+.modal-content {
+  @apply bg-white rounded-card shadow-float max-w-md w-full max-h-90vh overflow-y-auto;
+}
+
+/* Dark mode styles */
+.dark .card {
+  @apply bg-dark-100 border-dark-200;
+}
+
+.dark .input-field {
+  @apply bg-dark-100 border-dark-300 text-white;
+}
+
+.dark .modal-content {
+  @apply bg-dark-100 text-white;
+}

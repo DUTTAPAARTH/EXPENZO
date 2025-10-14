@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button { margin: 5px; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <h1>Expenzo Login Test</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testBackendConnection()">Test Backend Connection</button>
+    <button onclick="testLogin()">Test Login API</button>
+    <button onclick="testCORS()">Test CORS</button>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(test, success, message) {
+            const div = document.createElement('div');
+            div.className = `test ${success ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testBackendConnection() {
+            try {
+                const response = await fetch('http://localhost:5000/');
+                const data = await response.json();
+                addResult('Backend Connection', true, `✅ Connected! ${data.message}`);
+            } catch (error) {
+                addResult('Backend Connection', false, `❌ Failed: ${error.message}`);
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@expenzo.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('Login API', true, `✅ Login successful! User: ${data.data.user.name}`);
+                } else {
+                    addResult('Login API', false, `❌ Login failed: ${data.message}`);
+                }
+            } catch (error) {
+                addResult('Login API', false, `❌ Network error: ${error.message}`);
+            }
+        }
+        
+        async function testCORS() {
+            try {
+                const response = await fetch('http://localhost:5000/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                addResult('CORS Test', true, `✅ CORS working! Status: ${data.status}`);
+            } catch (error) {
+                addResult('CORS Test', false, `❌ CORS issue: ${error.message}`);
+            }
+        }
+        
+        // Auto-run tests on load
+        window.onload = function() {
+            setTimeout(testBackendConnection, 500);
+            setTimeout(testCORS, 1000);
+            setTimeout(testLogin, 1500);
+        };
+    </script>
+</body>
+</html>
