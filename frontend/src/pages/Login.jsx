@@ -64,35 +64,21 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("📝 Form submitted with:", {
-      email: formData.email,
-      password: "***",
-    });
-
-    if (!validateForm()) {
-      console.log("❌ Form validation failed");
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
     try {
-      console.log("🚀 Attempting login...");
       const result = await login({
         email: formData.email.toLowerCase(),
         password: formData.password,
       });
 
-      console.log("📊 Login result:", result);
-
       if (result.success) {
-        console.log("✅ Login successful, navigating to:", from);
         navigate(from, { replace: true });
-      } else {
-        console.log("❌ Login failed:", result.message);
       }
     } catch (error) {
-      console.error("💥 Login error:", error);
+      console.error("Login error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -102,7 +88,7 @@ const Login = () => {
   const handleDemoLogin = async () => {
     setFormData({
       email: "demo@expenzo.com",
-      password: "password123",
+      password: "demo123",
     });
 
     // Auto-submit after a brief delay

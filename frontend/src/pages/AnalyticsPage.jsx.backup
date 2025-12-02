@@ -1,0 +1,231 @@
+import React from 'react';
+import AnalyticsDashboard from './AnalyticsDashboard';
+
+// Re-export the comprehensive AnalyticsDashboard as AnalyticsPage
+const AnalyticsPage = () => {
+  return <AnalyticsDashboard />;
+};
+
+export default AnalyticsPage;
+          {timeframes.map((tf) => (
+            <button
+              key={tf.value}
+              onClick={() => setTimeframe(tf.value)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                timeframe === tf.value
+                  ? "bg-primary-500 text-white"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {tf.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* AI Insights Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {insights.map((insight, index) => {
+          const Icon = insight.icon;
+          return (
+            <motion.div
+              key={insight.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className={`bg-slate-900 border border-slate-800 rounded-xl p-4 ${insight.bgColor}`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-10 h-10 rounded-lg ${insight.bgColor} flex items-center justify-center`}
+                >
+                  <Icon className={`w-5 h-5 ${insight.color}`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className={`font-semibold ${insight.color} mb-1`}>
+                    {insight.title}
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    {insight.description}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Comparison Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {comparisonStats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+            className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+          >
+            <p className="text-sm text-slate-400 mb-2">{stat.label}</p>
+            <div className="flex items-end justify-between">
+              <div>
+                <p
+                  className={`text-2xl font-bold ${
+                    stat.trend === "up"
+                      ? "text-red-400"
+                      : stat.trend === "down"
+                      ? "text-green-400"
+                      : "text-white"
+                  }`}
+                >
+                  {stat.value}
+                </p>
+                {stat.amount && (
+                  <p className="text-xs text-slate-500 mt-1">{stat.amount}</p>
+                )}
+              </div>
+              {stat.trend !== "neutral" && (
+                <div>
+                  {stat.trend === "up" ? (
+                    <TrendingUp className="w-6 h-6 text-red-400" />
+                  ) : (
+                    <TrendingDown className="w-6 h-6 text-green-400" />
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Spending Trend */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-white mb-1">
+                Spending Trend
+              </h2>
+              <p className="text-sm text-slate-500">Last 6 months</p>
+            </div>
+            <BarChart3 className="w-5 h-5 text-primary-400" />
+          </div>
+          <SpendingTrendChart />
+        </motion.div>
+
+        {/* Category Breakdown */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-white mb-1">
+                Category Breakdown
+              </h2>
+              <p className="text-sm text-slate-500">This month</p>
+            </div>
+            <PieChart className="w-5 h-5 text-secondary-400" />
+          </div>
+          <CategoryBreakdownChart />
+        </motion.div>
+      </div>
+
+      {/* Top Categories Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+        className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+      >
+        <h2 className="text-lg font-semibold text-white mb-6">
+          Top Spending Categories
+        </h2>
+        <div className="space-y-4">
+          {topCategories.map((category, index) => (
+            <motion.div
+              key={category.name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
+              className="flex items-center gap-4"
+            >
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white">
+                    {category.name}
+                  </span>
+                  <span className="text-sm font-semibold text-white">
+                    ₹{category.amount.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className={`h-full ${category.color}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${category.percent}%` }}
+                      transition={{ duration: 1, delay: 1 + index * 0.1 }}
+                    />
+                  </div>
+                  <span className="text-xs text-slate-500 min-w-[40px] text-right">
+                    {category.percent}%
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Weekday Spending Pattern */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 1.2 }}
+        className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+      >
+        <h2 className="text-lg font-semibold text-white mb-6">
+          Spending by Day of Week
+        </h2>
+        <div className="flex items-end justify-between gap-4 h-48">
+          {weekdaySpending.map((day, index) => {
+            const height = (day.amount / maxWeekdayAmount) * 100;
+            return (
+              <div
+                key={day.day}
+                className="flex-1 flex flex-col items-center gap-2"
+              >
+                <motion.div
+                  className="w-full relative group"
+                  initial={{ height: 0 }}
+                  animate={{ height: `${height}%` }}
+                  transition={{ duration: 0.8, delay: 1.3 + index * 0.1 }}
+                >
+                  <div className="w-full h-full bg-gradient-to-t from-primary-600 to-primary-400 rounded-t-lg cursor-pointer hover:from-primary-500 hover:to-primary-300 transition-all" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div className="bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap border border-slate-700">
+                      ₹{day.amount.toLocaleString()}
+                    </div>
+                  </div>
+                </motion.div>
+                <span className="text-xs font-medium text-slate-400">
+                  {day.day}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default AnalyticsPage;

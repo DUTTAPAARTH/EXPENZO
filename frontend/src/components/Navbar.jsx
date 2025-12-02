@@ -49,23 +49,8 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <img
-                src="/logo.svg"
-                alt="Expenzo Logo"
-                className="w-8 h-8 object-contain"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.nextElementSibling.style.display = "inline";
-                }}
-              />
-              <span
-                className="text-2xl font-heading font-bold text-funky hidden"
-                style={{ display: "none" }}
-              >
-                💸
-              </span>
-              <span className="text-xl font-heading font-bold text-funky">
-                Expenzo
+              <span className="text-2xl font-heading font-bold text-funky">
+                💸 Expenzo
               </span>
             </Link>
 
@@ -79,11 +64,11 @@ const Navbar = () => {
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
 
-              <Link to="/login" className="btn-outline px-4 py-2">
+              <Link to="/signin" className="btn-outline px-4 py-2">
                 Sign In
               </Link>
 
-              <Link to="/register" className="btn-primary px-4 py-2">
+              <Link to="/signup" className="btn-primary px-4 py-2">
                 Get Started
               </Link>
             </div>
@@ -99,23 +84,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <img
-              src="/logo.svg"
-              alt="Expenzo Logo"
-              className="w-8 h-8 object-contain"
-              onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextElementSibling.style.display = "inline";
-              }}
-            />
-            <span
-              className="text-2xl font-heading font-bold text-funky hidden"
-              style={{ display: "none" }}
-            >
-              💸
-            </span>
-            <span className="text-xl font-heading font-bold text-funky">
-              Expenzo
+            <span className="text-2xl font-heading font-bold text-funky">
+              💸 Expenzo
             </span>
           </Link>
 

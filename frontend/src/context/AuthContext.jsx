@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { authAPI } from "../utils/api";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 // Create context
@@ -45,17 +45,12 @@ const authReducer = (state, action) => {
   }
 };
 
-// Initial state with mock user for development
+// Initial state
 const initialState = {
-  user: {
-    id: "mock-user",
-    name: "Demo User",
-    email: "demo@expenzo.com",
-    avatar: "🚀",
-  },
-  token: "mock-token",
-  isAuthenticated: true,
-  loading: false,
+  user: JSON.parse(localStorage.getItem("user")) || null,
+  token: localStorage.getItem("token"),
+  isAuthenticated: !!localStorage.getItem("token"),
+  loading: true,
   error: null,
 };
 
@@ -66,16 +61,15 @@ export const AuthProvider = ({ children }) => {
   // Set auth token in axios headers
   const setAuthToken = (token) => {
     if (token) {
-      // Token will be automatically added by api interceptor
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       localStorage.setItem("token", token);
     } else {
-      // Token will be automatically removed by api interceptor
+      delete axios.defaults.headers.common["Authorization"];
       localStorage.removeItem("token");
     }
   };
 
-  // Load user on initial app load - disabled for development
-  /*
+  // Load user on initial app load
   useEffect(() => {
     if (state.token) {
       setAuthToken(state.token);
@@ -84,12 +78,11 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: "SET_LOADING", payload: false });
     }
   }, []);
-  */
 
   // Load user from token
   const loadUser = async () => {
     try {
-      const response = await authAPI.getProfile();
+      const response = await axios.get("/api/auth/me");
 
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -102,6 +95,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Load user error:", error);
       dispatch({ type: "AUTH_ERROR", payload: error.response?.data?.message });
       setAuthToken(null);
+      localStorage.removeItem("user");
     }
   };
 
@@ -110,11 +104,12 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      const response = await authAPI.register(userData);
+      const response = await axios.post("/api/auth/register", userData);
 
       const { user, token } = response.data.data;
 
       setAuthToken(token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -135,22 +130,14 @@ export const AuthProvider = ({ children }) => {
   // Login user
   const login = async (credentials) => {
     try {
-      console.log("🔄 Starting login with:", {
-        email: credentials.email,
-        password: "***",
-      });
-      console.log(
-        "🌐 API Base URL:",
-        import.meta.env.VITE_API_URL || "http://localhost:5000"
-      );
       dispatch({ type: "SET_LOADING", payload: true });
 
-      const response = await authAPI.login(credentials);
-      console.log("✅ Login API response:", response.data);
+      const response = await axios.post("/api/auth/login", credentials);
 
       const { user, token } = response.data.data;
 
       setAuthToken(token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -161,10 +148,6 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user, token };
     } catch (error) {
-      console.error("❌ Login error:", error);
-      console.error("❌ Error response:", error.response?.data);
-      console.error("❌ Error status:", error.response?.status);
-      console.error("❌ Error config:", error.config);
       const message = error.response?.data?.message || "Login failed";
       dispatch({ type: "AUTH_ERROR", payload: message });
       toast.error(message);
@@ -175,12 +158,13 @@ export const AuthProvider = ({ children }) => {
   // Logout user
   const logout = async () => {
     try {
-      await authAPI.logout();
+      await axios.post("/api/auth/logout");
     } catch (error) {
       console.error("Logout error:", error);
     }
 
     setAuthToken(null);
+    localStorage.removeItem("user");
     dispatch({ type: "LOGOUT" });
     toast.success("👋 Logged out successfully!");
   };
@@ -190,7 +174,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      const response = await authAPI.updateProfile(userData);
+      const response = await axios.put("/api/auth/profile", userData);
 
       const { user } = response.data.data;
 
@@ -213,7 +197,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      await authAPI.changePassword(passwordData);
+      await axios.put("/api/auth/password", passwordData);
 
       dispatch({ type: "SET_LOADING", payload: false });
 
@@ -233,7 +217,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      await authAPI.deleteAccount(passwordData);
+      await axios.delete("/api/auth/account", { data: passwordData });
 
       setAuthToken(null);
       dispatch({ type: "LOGOUT" });

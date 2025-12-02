@@ -25,8 +25,9 @@ const expenseReducer = (state, action) => {
         expenses: [action.payload, ...state.expenses],
         summary: {
           ...state.summary,
-          totalExpenses: state.summary.totalExpenses + 1,
-          totalAmount: state.summary.totalAmount + action.payload.amount,
+          totalExpenses: (state.summary?.totalExpenses || 0) + 1,
+          totalAmount:
+            (state.summary?.totalAmount || 0) + action.payload.amount,
         },
       };
     case "UPDATE_EXPENSE":
@@ -147,7 +148,7 @@ export const ExpenseProvider = ({ children }) => {
       const message =
         error.response?.data?.message || "Failed to fetch expenses";
       dispatch({ type: "SET_ERROR", payload: message });
-      toast.error(message);
+      console.error("Failed to fetch expenses:", error);
       return { success: false, message };
     }
   };
@@ -168,7 +169,9 @@ export const ExpenseProvider = ({ children }) => {
   // Add new expense
   const addExpense = async (expenseData) => {
     try {
+      console.log("[DEBUG] Adding expense with data:", expenseData);
       const response = await axios.post("/api/expenses", expenseData);
+      console.log("[DEBUG] Add expense response:", response.data);
 
       const newExpense = response.data.data.expense;
 
@@ -178,6 +181,10 @@ export const ExpenseProvider = ({ children }) => {
 
       return { success: true, data: newExpense };
     } catch (error) {
+      console.error(
+        "[DEBUG] Add expense error:",
+        error.response?.data || error.message
+      );
       const message = error.response?.data?.message || "Failed to add expense";
       toast.error(message);
       return { success: false, message };

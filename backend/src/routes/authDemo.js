@@ -1,162 +1,76 @@
-// Demo authentication routes for testing without MongoDB
+// Demo authentication routes without MongoDB
 const express = require("express");
+const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const router = express.Router();
-
-// Demo users for testing (using plaintext for simplicity)
-const demoUsers = [
+// In-memory users storage
+let users = [
   {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    password: "password123", // plaintext for demo
-    avatar: "👨‍💻",
-    isActive: true,
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    password: "password123", // plaintext for demo
-    avatar: "👩‍💼",
-    isActive: true,
-  },
-  {
-    id: "3",
+    id: "demo-user",
     name: "Demo User",
     email: "demo@expenzo.com",
-    password: "password123", // plaintext for demo
-    avatar: "🚀",
-    isActive: true,
+    password: "$2a$10$2hMXtnuxSrsUGHGQX2VQ/ekeiRZot7cr6SK3j9idrpP7eshCmuMrq", // hashed "password123"
+    avatar: "😎",
+    createdAt: new Date().toISOString(),
   },
 ];
+let userIdCounter = 2;
 
-// Generate JWT Token
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || "demo_secret", {
-    expiresIn: process.env.JWT_EXPIRE || "7d",
-  });
-};
+const JWT_SECRET = process.env.JWT_SECRET || "expenzo-demo-secret-key-2024";
 
-// @desc    Demo Login
-// @route   POST /api/auth/login
-// @access  Public
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    console.log("🎭 Demo Login Attempt:", { email, password: "***" });
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide email and password",
-      });
-    }
-
-    // Find user
-    const user = demoUsers.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
-
-    console.log(
-      "🔍 User found:",
-      user ? `${user.name} (${user.email})` : "No user found"
-    );
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    // Check password (simple comparison for demo)
-    const isMatch = password === user.password;
-    console.log("🔐 Input password:", password);
-    console.log("🔐 Stored password:", user.password);
-    console.log("🔐 Password match:", isMatch);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    // Generate token
-    const token = generateToken(user.id);
-    console.log("✅ Login successful for:", user.email);
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        },
-        token,
-      },
-    });
-  } catch (error) {
-    console.error("❌ Login error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error during login",
-    });
-  }
-});
-
-// @desc    Demo Register
+// @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, avatar } = req.body;
 
+    // Validate input
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please provide name, email and password",
+        message: "Please provide name, email, and password",
       });
     }
 
     // Check if user already exists
-    const existingUser = demoUsers.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
-
+    const existingUser = users.find((u) => u.email === email);
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User with this email already exists",
+        message: "User already exists with this email",
       });
     }
 
-    // Create new user (plaintext password for demo)
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
     const newUser = {
-      id: String(demoUsers.length + 1),
+      id: `user-${userIdCounter++}`,
       name,
-      email: email.toLowerCase(),
-      password: password, // plaintext for demo
-      avatar: avatar || "👤",
-      isActive: true,
+      email,
+      password: hashedPassword,
+      avatar: avatar || "😊",
+      createdAt: new Date().toISOString(),
     };
 
-    // Add to demo users array
-    demoUsers.push(newUser);
+    users.push(newUser);
 
-    // Generate token
-    const token = generateToken(newUser.id);
+    // Generate JWT
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res.status(201).json({
       success: true,
-      message: "Registration successful",
+      message: "🎉 Account created successfully!",
       data: {
         user: {
           id: newUser.id,
@@ -168,7 +82,7 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Register error:", error);
     res.status(500).json({
       success: false,
       message: "Server error during registration",
@@ -176,22 +90,82 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// @desc    Get current user
-// @route   GET /api/auth/me
-// @access  Private
-router.get("/me", async (req, res) => {
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
+router.post("/login", async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
+    const { email, password } = req.body;
 
-    if (!token) {
-      return res.status(401).json({
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
-        message: "No token provided",
+        message: "Please provide email and password",
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "demo_secret");
-    const user = demoUsers.find((u) => u.id === decoded.id);
+    // Find user
+    const user = users.find((u) => u.email === email);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      success: true,
+      message: "🎉 Login successful!",
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during login",
+    });
+  }
+});
+
+// @desc    Get current user
+// @route   GET /api/auth/me
+// @access  Private
+router.get("/me", (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = users.find((u) => u.id === decoded.id);
 
     if (!user) {
       return res.status(404).json({
@@ -200,7 +174,7 @@ router.get("/me", async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    res.json({
       success: true,
       data: {
         user: {
@@ -212,10 +186,128 @@ router.get("/me", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get user error:", error);
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: "Invalid token",
+    });
+  }
+});
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+router.put("/profile", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userIndex = users.findIndex((u) => u.id === decoded.id);
+
+    if (userIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const { name, avatar, currentPassword, newPassword } = req.body;
+
+    // Update name and avatar
+    if (name) users[userIndex].name = name;
+    if (avatar) users[userIndex].avatar = avatar;
+
+    // Update password if provided
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(
+        currentPassword,
+        users[userIndex].password
+      );
+
+      if (!isMatch) {
+        return res.status(400).json({
+          success: false,
+          message: "Current password is incorrect",
+        });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      users[userIndex].password = await bcrypt.hash(newPassword, salt);
+    }
+
+    res.json({
+      success: true,
+      message: "✅ Profile updated successfully!",
+      data: {
+        user: {
+          id: users[userIndex].id,
+          name: users[userIndex].name,
+          email: users[userIndex].email,
+          avatar: users[userIndex].avatar,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error updating profile",
+    });
+  }
+});
+
+// @desc    Delete account
+// @route   DELETE /api/auth/account
+// @access  Private
+router.delete("/account", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userIndex = users.findIndex((u) => u.id === decoded.id);
+
+    if (userIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const { password } = req.body;
+
+    // Verify password before deletion
+    const isMatch = await bcrypt.compare(password, users[userIndex].password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    users.splice(userIndex, 1);
+
+    res.json({
+      success: true,
+      message: "👋 Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Account deletion error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error deleting account",
     });
   }
 });

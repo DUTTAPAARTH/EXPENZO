@@ -1,16 +1,18 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-// Import routes
+// Import ONLY demo routes (no MongoDB)
 const authRoutes = require("./routes/authDemo");
-const expenseRoutes = require("./routes/expenses");
-const groupRoutes = require("./routes/groups");
-const insightRoutes = require("./routes/insights");
+const expenseRoutes = require("./routes/expensesDemo");
+const groupRoutes = require("./routes/groupsDemo");
+const insightRoutes = require("./routes/insightsDemo");
+const budgetRoutes = require("./routes/budgetsDemo");
+const ruleRoutes = require("./routes/rulesDemo");
+const splitsRoutes = require("./routes/splitsDemo");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,7 +31,11 @@ app.use(limiter);
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
     credentials: true,
   })
 );
@@ -38,25 +44,17 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/expenzo")
-  .then(() => console.log("🎯 MongoDB Connected - Expenzo Database Ready!"))
-  .catch((err) => {
-    console.warn(
-      "⚠️  MongoDB connection failed - Running in demo mode:",
-      err.message
-    );
-    console.log(
-      "💡 For full functionality, please set up MongoDB Atlas or local MongoDB"
-    );
-  });
+console.log("💾 Running with in-memory data storage (no database required)");
+console.log("⚡ All data will be stored in memory and reset on server restart");
 
-// Routes
+// Use ONLY demo routes (no MongoDB)
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/insights", insightRoutes);
+app.use("/api/budgets", budgetRoutes);
+app.use("/api/rules", ruleRoutes);
+app.use("/api/splits", splitsRoutes);
 
 // Welcome route
 app.get("/", (req, res) => {
@@ -104,9 +102,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Expenzo Backend Server running on port ${PORT}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(
-    `💾 Database: ${
-      process.env.MONGODB_URI ? "MongoDB Atlas" : "Local MongoDB"
-    }`
-  );
+  console.log(`💾 Storage: In-Memory (Demo Mode)`);
+  console.log(`📝 Note: All data will be reset when server restarts`);
 });

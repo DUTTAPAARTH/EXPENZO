@@ -103,6 +103,7 @@ export default {
         "pulse-slow": "pulse 3s infinite",
         float: "float 3s ease-in-out infinite",
         glow: "glow 2s ease-in-out infinite alternate",
+        shimmer: "shimmer 2s linear infinite",
       },
       keyframes: {
         float: {
@@ -112,6 +113,10 @@ export default {
         glow: {
           "0%": { boxShadow: "0 0 20px rgba(255, 195, 0, 0.3)" },
           "100%": { boxShadow: "0 0 40px rgba(255, 195, 0, 0.6)" },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
       },
       maxHeight: {
