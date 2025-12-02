@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build artifacts
+.next
+out
+.cache
+
+# Development files
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Test files
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Batch files
+*.bat
+
+# Documentation (optional - remove if you want to include)
+*.md
+!README.md
+
+# Sample files
+sample_*
+
+# Temporary
+.vite
+src/
